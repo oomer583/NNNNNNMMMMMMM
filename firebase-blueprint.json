@@ -1,48 +1,45 @@
 {
   "entities": {
-    "User": {
-      "title": "User",
-      "description": "User profile information",
-      "type": "object",
-      "properties": {
-        "uid": { "type": "string" },
-        "email": { "type": "string" },
-        "displayName": { "type": "string" },
-        "photoURL": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["uid", "email"]
-    },
     "Project": {
       "title": "Project",
-      "description": "Board project containing nodes and edges",
+      "description": "User storytelling project mapping cards and connections.",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "name": { "type": "string" },
-        "userId": { "type": "string" },
-        "nodes": { "type": "array" },
-        "edges": { "type": "array" },
-        "background": {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" },
-            "color": { "type": "string" },
-            "secondaryColor": { "type": "string" }
-          }
-        },
-        "updatedAt": { "type": "number" }
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "userId", "updatedAt"]
+      "required": ["name", "ownerId"]
+    },
+    "Card": {
+      "title": "Card",
+      "description": "An atomic unit of thought in the board.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "projectId": { "type": "string" },
+        "type": { "type": "string" },
+        "category": { "type": "string" },
+        "data": { "type": "object" },
+        "position": { "type": "object" }
+      },
+      "required": ["projectId", "type"]
     }
   },
   "firestore": {
-    "users/{userId}": {
-      "schema": "User",
-      "description": "User records"
-    },
-    "projects/{projectId}": {
+    "projects": {
       "schema": "Project",
-      "description": "Project board data"
+      "description": "Main project documents."
+    },
+    "cards": {
+      "schema": "Card",
+      "description": "Nodes within a project."
+    },
+    "edges": {
+      "schema": "object",
+      "description": "Connections between cards."
     }
   }
 }

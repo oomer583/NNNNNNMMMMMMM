@@ -127,6 +127,7 @@ export default function LinkBoard({ projectId, onBack, onProjectSwitch, onCreate
   const [searchQuery, setSearchQuery] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [menu, setMenu] = useState<{ id: string; top: number; left: number } | null>(null);
+  const [showLeftSidebar, setShowLeftSidebar] = useState(true);
   const [showRightSidebar, setShowRightSidebar] = useState(true);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -366,6 +367,91 @@ export default function LinkBoard({ projectId, onBack, onProjectSwitch, onCreate
 
       {/* Main Content Area */}
       <div className="flex-1 relative flex overflow-hidden">
+        {/* Left Sidebar - Project Manager */}
+        <AnimatePresence>
+          {showLeftSidebar && (
+            <motion.aside
+              initial={{ x: -280, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -280, opacity: 0 }}
+              className="w-72 py-8 px-6 border-r border-black/5 flex flex-col gap-8 bg-white overflow-y-auto z-20 shadow-xl"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="font-serif italic text-lg font-bold">Projelerim</h4>
+                  <p className="text-[9px] uppercase tracking-widest text-black/30 font-bold">Workspace</p>
+                </div>
+                <button 
+                  onClick={() => setShowLeftSidebar(false)}
+                  className="p-2 hover:bg-black/5 rounded-full text-black/20 hover:text-black transition-all"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <button 
+                  onClick={onCreateProject}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl bg-black text-white text-xs font-bold shadow-lg hover:translate-y-[-2px] transition-all"
+                >
+                  <Plus size={16} />
+                  Yeni Anlatı Başlat
+                </button>
+
+                <div className="pt-4 space-y-1">
+                  {projects.map(proj => (
+                    <div 
+                      key={proj.id} 
+                      onClick={() => handleProjectClick(proj.id)}
+                      className={cn(
+                        "flex justify-between items-center py-2.5 px-3 rounded-xl text-[12px] cursor-pointer group transition-all",
+                        projectId === proj.id ? "bg-[#F8F7F4] text-black font-bold border border-black/5" : "text-black/60 hover:bg-black/5"
+                      )}
+                    >
+                      <span className="truncate max-w-[140px] italic">{proj.name}</span>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); deleteProject(proj.id); }}
+                        className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 rounded-lg transition-all"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-auto pt-6 border-t border-black/5">
+                <h4 className="font-serif italic text-sm mb-4 text-black/40">Kategoriler</h4>
+                <nav className="space-y-4">
+                  {[
+                    { label: 'Fikirler', type: 'idea', color: 'yellow' },
+                    { label: 'Görevler', type: 'task', color: 'blue' },
+                    { label: 'Karakterler', type: 'character', color: 'amber' },
+                  ].map(item => (
+                    <div key={item.label} className="flex justify-between items-center text-[11px] font-bold text-black/60 group cursor-default">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("w-2 h-2 rounded-full shadow-sm", `bg-${item.color}-400`)} />
+                        <span>{item.label}</span>
+                      </div>
+                      <span className="text-[10px] opacity-20">{nodes.filter(n => (n.data as any).category === item.type).length}</span>
+                    </div>
+                  ))}
+                </nav>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+
+        {/* Toggle Left Button */}
+        {!showLeftSidebar && (
+          <button
+            onClick={() => setShowLeftSidebar(true)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-8 h-20 bg-white border border-black/10 rounded-r-xl shadow-xl flex items-center justify-center text-black/20 hover:text-black transition-all"
+          >
+            <ChevronRight size={18} />
+          </button>
+        )}
+
         {/* Canvas Area */}
         <div className="flex-1 relative flex">
           <div className="flex-1 relative">
@@ -460,16 +546,29 @@ export default function LinkBoard({ projectId, onBack, onProjectSwitch, onCreate
 
                 <div className="w-px h-6 bg-black/10 mx-1" />
 
-                <button
-                  onClick={() => setShowRightSidebar(!showRightSidebar)}
-                  className={cn(
-                    "flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-md active:scale-95",
-                    showRightSidebar ? "bg-black text-white" : "bg-white text-black border border-black/10"
-                  )}
-                >
-                  <Plus size={16} />
-                  <span>Ekle</span>
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setShowLeftSidebar(!showLeftSidebar)}
+                    className={cn(
+                      "flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-md active:scale-95",
+                      showLeftSidebar ? "bg-black text-white" : "bg-white text-black border border-black/10"
+                    )}
+                  >
+                    <Layers size={16} />
+                    <span>Projeler</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowRightSidebar(!showRightSidebar)}
+                    className={cn(
+                      "flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all shadow-md active:scale-95",
+                      showRightSidebar ? "bg-black text-white" : "bg-white text-black border border-black/10"
+                    )}
+                  >
+                    <Plus size={16} />
+                    <span>Kütüphane</span>
+                  </button>
+                </div>
 
                 <div className="w-px h-6 bg-black/10 mx-1" />
 
