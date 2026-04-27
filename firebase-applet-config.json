@@ -1,10 +1,10 @@
 {
-  "projectId": "aaff-73e15",
-  "appId": "1:606530932820:web:ad957c65b19da65a9e5dc1",
-  "apiKey": "AIzaSyB1SWuOsyCyFTLaG932l9WpjHLZVruo5TE",
-  "authDomain": "aaff-73e15.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-74216ac3-1f0d-4b2e-b6dd-08e887b9c043",
-  "storageBucket": "aaff-73e15.firebasestorage.app",
-  "messagingSenderId": "606530932820",
-  "measurementId": ""
+  "projectId": "notme-92a13",
+  "appId": "1:457688845116:web:f0f3aca69910d13f512c39",
+  "apiKey": "AIzaSyBrDH7IFUHys6TT7YSKMgEHe5QoV9dXSYs",
+  "authDomain": "notme-92a13.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "notme-92a13.firebasestorage.app",
+  "messagingSenderId": "457688845116",
+  "measurementId": "G-5LT3JMHRL3"
 }

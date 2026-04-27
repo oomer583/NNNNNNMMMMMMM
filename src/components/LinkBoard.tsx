@@ -58,7 +58,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useReactFlow } from '@xyflow/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjects } from '../hooks/useProjects';
-import { signInWithGoogle, logout } from '../lib/firebase';
+import { handleGoogleLogin, logout } from '../lib/firebase';
 import { getLayoutedElements } from '../lib/layout';
 import * as htmlToImage from 'html-to-image';
 import download from 'downloadjs';
@@ -345,7 +345,7 @@ export default function LinkBoard({ projectId, onBack, onProjectSwitch, onCreate
             </div>
           ) : (
             <button 
-              onClick={signInWithGoogle}
+              onClick={handleGoogleLogin}
               className="px-4 py-1.5 bg-black text-white rounded-lg text-xs font-semibold hover:bg-black/80 transition-colors flex items-center gap-2"
             >
               <UserIcon size={14} />

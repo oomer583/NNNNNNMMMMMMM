@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { MousePointer2, Sparkles, Layout, Database, Shield } from 'lucide-react';
-import { signInWithGoogle } from '../lib/firebase';
+import { handleGoogleLogin } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LandingPage() {
@@ -22,7 +22,7 @@ export default function LandingPage() {
             </button>
           ) : (
             <button 
-              onClick={signInWithGoogle}
+              onClick={handleGoogleLogin}
               className="px-6 py-2.5 bg-black text-white rounded-full text-sm font-bold hover:shadow-xl transition-all flex items-center gap-2"
             >
               Sign In
@@ -52,7 +52,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
-                onClick={signInWithGoogle}
+                onClick={handleGoogleLogin}
                 className="px-10 py-4 bg-black text-white rounded-full text-lg font-bold hover:bg-black/80 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:translate-y-[-2px]"
               >
                 Start Creating Free

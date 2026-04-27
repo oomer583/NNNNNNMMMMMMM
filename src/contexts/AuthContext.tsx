@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, db } from '../lib/firebase';
+import { User } from 'firebase/auth';
+import { auth, db, listenAuth, checkRedirectLogin } from '../lib/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 interface AuthContextType {
@@ -15,7 +15,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    // Check for redirect result on mount
+    const handleRedirect = async () => {
+      try {
+        const user = await checkRedirectLogin();
+        if (user) {
+          // You could do extra processing here if needed
+          console.log("User detected from redirect in AuthProvider");
+        }
+      } catch (err) {
+        console.error("Error checking redirect in AuthProvider", err);
+      }
+    };
+
+    handleRedirect();
+
+    const unsubscribe = listenAuth(async (user: User | null) => {
       if (user) {
         // Create user doc if not exists
         const userRef = doc(db, 'users', user.uid);
