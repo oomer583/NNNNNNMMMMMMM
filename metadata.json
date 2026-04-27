@@ -1,0 +1,9 @@
+{
+  "name": "LinkBoard",
+  "description": "A visual planning and connection system using cards and links for brainstorming and roadmapping.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

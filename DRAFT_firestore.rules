@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Pillars & Blueprints
+    function isValidUser(data) {
+      return data.uid == request.auth.uid &&
+             data.email == request.auth.token.email &&
+             data.email is string &&
+             data.keys().hasAll(['uid', 'email']) &&
+             // Limit fields to prevent shadow updates
+             data.keys().size() <= 6;
+    }
+
+    function isValidProject(data) {
+      return data.userId == request.auth.uid &&
+             data.name is string &&
+             data.name.size() > 0 &&
+             data.name.size() <= 100 &&
+             (data.category == null || (data.category is string && data.category.size() <= 50)) &&
+             // Temporal integrity
+             data.updatedAt == request.time;
+    }
+
+    // Collection Rules
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId && 
+                      isValidUser(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'updatedAt']);
+    }
+
+    match /projects/{projectId} {
+      // Rule 3: Path Variable Hardening
+      allow get: if isSignedIn() && isValidId(projectId) && existing().userId == request.auth.uid;
+      
+      // Rule 8: SECURE LIST QUERIES (No O(n) lookups)
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn() && isValidId(projectId) && isValidProject(incoming());
+
+      allow update: if isSignedIn() && isValidId(projectId) && existing().userId == request.auth.uid && 
+                      isValidProject(incoming()) &&
+                      // Prevent ownership transfer
+                      incoming().userId == existing().userId &&
+                      // Explicitly identify update actions or allow standard updates
+                      incoming().diff(existing()).affectedKeys().hasAny(['nodes', 'edges', 'background', 'name', 'category', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(projectId) && existing().userId == request.auth.uid;
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Board project containing nodes and edges",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "userId": { "type": "string" },
+        "nodes": { "type": "array" },
+        "edges": { "type": "array" },
+        "background": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "color": { "type": "string" },
+            "secondaryColor": { "type": "string" }
+          }
+        },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["name", "userId", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User records"
+    },
+    "projects/{projectId}": {
+      "schema": "Project",
+      "description": "Project board data"
+    }
+  }
+}
