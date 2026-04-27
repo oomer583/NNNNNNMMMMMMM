@@ -32,18 +32,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const unsubscribe = listenAuth(async (user: User | null) => {
       if (user) {
-        // Create user doc if not exists
-        const userRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userRef);
-        
-        if (!userDoc.exists()) {
-          await setDoc(userRef, {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            createdAt: new Date().toISOString(),
-          });
+        try {
+          // Sync user document with Firestore if possible
+          const userRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userRef);
+          
+          if (!userDoc.exists()) {
+            await setDoc(userRef, {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+              createdAt: new Date().toISOString(),
+            });
+          }
+        } catch (error) {
+          console.warn("Firestore user document sync failed:", error);
         }
         setUser(user);
       } else {
