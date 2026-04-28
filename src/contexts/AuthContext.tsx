@@ -66,12 +66,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     if (!res.ok) {
-      let message = 'Login failed';
+      console.error(`Auth request failed with status: ${res.status}`);
+      let message = 'Operation failed';
       try {
-        const error = await res.json();
-        message = error.message || message;
+        const text = await res.text();
+        if (text && text.trim().startsWith('{')) {
+          const error = JSON.parse(text);
+          message = error.message || message;
+        } else {
+          message = `Server error (${res.status})`;
+        }
       } catch (e) {
-        // Not JSON or empty body
+        // Not JSON
       }
       throw new Error(message);
     }
@@ -89,10 +95,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     if (!res.ok) {
+      console.error(`Signup request failed with status: ${res.status}`);
       let message = 'Signup failed';
       try {
-        const error = await res.json();
-        message = error.message || message;
+        const text = await res.text();
+        if (text && text.trim().startsWith('{')) {
+          const error = JSON.parse(text);
+          message = error.message || message;
+        } else {
+          message = `Server error (${res.status})`;
+        }
       } catch (e) {
         // Not JSON
       }

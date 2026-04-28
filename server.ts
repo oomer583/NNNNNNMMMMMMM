@@ -24,15 +24,26 @@ async function startServer() {
   app.use(cors());
 
   // Helper to read users
-  const getUsers = () => JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
+  const getUsers = () => {
+    try {
+      const data = fs.readFileSync(USERS_FILE, 'utf-8');
+      return JSON.parse(data || '[]');
+    } catch (e) {
+      return [];
+    }
+  };
   const saveUsers = (users: any) => fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 
   // --- Auth Routes ---
 
   app.post('/api/auth/signup', async (req, res) => {
+    console.log('Signup Attempt:', req.body.email);
     const { email, password, displayName } = req.body;
-    const users = getUsers();
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
+    const users = getUsers();
     if (users.find((u: any) => u.email === email)) {
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -56,14 +67,22 @@ async function startServer() {
   });
 
   app.post('/api/auth/login', async (req, res) => {
+    console.log('Login Attempt:', req.body.email);
     const { email, password } = req.body;
+    if (!email || !password) {
+      console.log('Login Error: Missing email or password');
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     const users = getUsers();
     const user = users.find((u: any) => u.email === email);
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
+      console.log('Login Error: Invalid credentials for', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    console.log('Login Success:', email);
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword, token });
