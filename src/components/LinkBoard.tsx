@@ -58,7 +58,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useReactFlow } from '@xyflow/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjects } from '../hooks/useProjects';
-import { handleGoogleLogin, logout } from '../lib/firebase';
 import { getLayoutedElements } from '../lib/layout';
 import * as htmlToImage from 'html-to-image';
 import download from 'downloadjs';
@@ -118,7 +117,7 @@ export default function LinkBoard({ projectId, onBack, onProjectSwitch, onCreate
     setDefaultSize
   } = useLinkBoard();
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { projects, loading: projectsLoading, saveProject, createProject, deleteProject, getProject } = useProjects();
   
   const { zoomIn, zoomOut, fitView, setNodes, setEdges } = useReactFlow();
@@ -326,35 +325,14 @@ export default function LinkBoard({ projectId, onBack, onProjectSwitch, onCreate
             />
           </div>
 
-          <div className="w-px h-6 bg-black/10" />
-
-          {user ? (
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-bold leading-none">{user.displayName}</span>
-                <span className="text-[10px] opacity-40">Pro Account</span>
-              </div>
-              <img src={user.photoURL || ''} alt="" className="w-8 h-8 rounded-full border border-black/5" />
-              <button 
-                onClick={logout}
-                className="p-2 hover:bg-black/5 rounded-lg transition-colors text-black/40 hover:text-black"
-                title="Logout"
-              >
-                <LogOut size={16} />
-              </button>
-            </div>
-          ) : (
-            <button 
-              onClick={handleGoogleLogin}
-              className="px-4 py-1.5 bg-black text-white rounded-lg text-xs font-semibold hover:bg-black/80 transition-colors flex items-center gap-2"
-            >
-              <UserIcon size={14} />
-              Sign In
-            </button>
-          )}
-
-          <div className="w-px h-6 bg-black/10" />
-
+          <button 
+            onClick={logout}
+            className="p-2 hover:bg-black/5 rounded-lg transition-colors text-black/60 hover:text-red-500"
+            title="Logout"
+          >
+            <LogOut size={18} />
+          </button>
+          
           <button 
             onClick={() => setShowSettings(true)}
             className="p-2 hover:bg-black/5 rounded-lg transition-colors text-black/60 hover:text-black"
@@ -390,14 +368,6 @@ export default function LinkBoard({ projectId, onBack, onProjectSwitch, onCreate
               </div>
 
               <div className="space-y-2">
-                <button 
-                  onClick={onCreateProject}
-                  className="w-full flex items-center gap-3 p-3 rounded-2xl bg-black text-white text-xs font-bold shadow-lg hover:translate-y-[-2px] transition-all"
-                >
-                  <Plus size={16} />
-                  Yeni Anlatı Başlat
-                </button>
-
                 <div className="pt-4 space-y-1">
                   {projects.map(proj => (
                     <div 

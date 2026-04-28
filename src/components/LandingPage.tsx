@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { MousePointer2, Sparkles, Layout, Database, Shield } from 'lucide-react';
-import { handleGoogleLogin } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
+import AuthModal from './AuthModal';
 
 export default function LandingPage() {
   const { user } = useAuth();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#F8F7F4] text-[#1A1A1A] font-sans overflow-x-hidden">
@@ -15,14 +16,14 @@ export default function LandingPage() {
         <div className="flex items-center gap-6">
           {user ? (
             <button 
-              onClick={() => window.location.reload()} // Just a quick refresher to trigger app state change if needed
+              onClick={() => window.location.reload()} // Just a quick refresher
               className="px-6 py-2.5 bg-black text-white rounded-full text-sm font-bold hover:shadow-xl transition-all"
             >
               Go to Dashboard
             </button>
           ) : (
             <button 
-              onClick={handleGoogleLogin}
+              onClick={() => setIsAuthOpen(true)}
               className="px-6 py-2.5 bg-black text-white rounded-full text-sm font-bold hover:shadow-xl transition-all flex items-center gap-2"
             >
               Sign In
@@ -41,7 +42,7 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold mb-6 border border-emerald-100">
               <Sparkles size={14} />
-              <span>Free Cloud Sync Enabled</span>
+              <span>Secure Cloud Sync Enabled</span>
             </div>
             <h1 className="text-6xl md:text-7xl font-serif italic leading-[1.1] mb-8 font-bold">
               Where thoughts <br />
@@ -52,7 +53,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
-                onClick={handleGoogleLogin}
+                onClick={() => setIsAuthOpen(true)}
                 className="px-10 py-4 bg-black text-white rounded-full text-lg font-bold hover:bg-black/80 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:translate-y-[-2px]"
               >
                 Start Creating Free
@@ -60,7 +61,7 @@ export default function LandingPage() {
               <div className="flex -space-x-2 items-center px-4">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-black/5 flex items-center justify-center overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="" />
+                    <img key={i} src={`https://i.pravatar.cc/100?img=${i+10}`} alt="" />
                   </div>
                 ))}
                 <span className="ml-4 text-xs font-medium text-black/40 italic">Joined by 200+ creators</span>
@@ -115,9 +116,9 @@ export default function LandingPage() {
         <div className="mt-40 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
             { icon: Layout, title: "Infinite Canvas", desc: "No boundaries for your creative flow. Zoom, pan, and build at scale." },
-            { icon: Database, title: "Persistence", desc: "Secure Firebase backend ensures your work is synced across all devices." },
+            { icon: Database, title: "Local Persistence", desc: "Your projects are saved automatically to your browser for fast access." },
             { icon: Sparkles, title: "Auto-Layout", desc: "Instantly organize chaos into structured narratives with dagre-powered layouting." },
-            { icon: Shield, title: "Private & Secure", desc: "Your data is yours. Industry standard auth and encryption protecting every node." }
+            { icon: Shield, title: "Private", desc: "Your data stays on your device. Craft your stories with total peace of mind." }
           ].map((feat, i) => (
             <motion.div
               key={i}
@@ -141,6 +142,8 @@ export default function LandingPage() {
       <footer className="py-12 border-t border-black/5 text-center">
         <p className="text-sm font-medium text-black/20 italic">Designed for deep work. Crafted with intentionality.</p>
       </footer>
+
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </div>
   );
 }

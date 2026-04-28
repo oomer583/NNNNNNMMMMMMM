@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Folder, Clock, Trash2, LogOut, Search, Grid, List as ListIcon, ChevronRight, Database } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjects } from '../hooks/useProjects';
-import { logout } from '../lib/firebase';
 import { cn } from '../lib/utils';
 
 interface DashboardProps {
@@ -12,7 +11,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onSelectProject, onCreateProject }: DashboardProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { projects, loading, deleteProject } = useProjects();
   const [view, setView] = React.useState<'grid' | 'list'>('grid');
   const [search, setSearch] = React.useState('');
@@ -60,27 +59,29 @@ export default function Dashboard({ onSelectProject, onCreateProject }: Dashboar
 
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3 pr-6 border-r border-black/5">
-            <div className="text-right">
+            <div className="hidden md:block text-right">
               <div className="text-xs font-bold leading-none">{user?.displayName}</div>
               <div className="text-[10px] text-black/40 uppercase tracking-widest mt-1">Free Tier</div>
             </div>
-            <img src={user?.photoURL || ''} alt="" className="w-10 h-10 rounded-xl border border-black/5 shadow-sm" />
-            <button 
-              onClick={() => logout()}
-              className="p-2 hover:bg-black/5 rounded-lg text-black/40 hover:text-black transition-colors"
-              title="Logout"
-            >
-              <LogOut size={18} />
-            </button>
-            <button 
-              onClick={exportAll}
-              className="hidden lg:flex p-2 hover:bg-black/5 rounded-lg text-black/40 hover:text-black transition-colors"
-              title="Backup All Projects"
-            >
-              <Database size={18} />
-            </button>
+            <img src={user?.photoURL || undefined} alt="" className="w-10 h-10 rounded-xl border border-black/5 shadow-sm" />
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={exportAll}
+                className="hidden lg:flex p-2 hover:bg-black/5 rounded-lg text-black/40 hover:text-black transition-colors"
+                title="Backup All Projects"
+              >
+                <Database size={18} />
+              </button>
+              <button 
+                onClick={logout}
+                className="p-2 hover:bg-red-50 rounded-lg text-black/40 hover:text-red-500 transition-colors"
+                title="Logout"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
           </div>
-          
+
           <button 
             onClick={onCreateProject}
             className="px-6 py-2.5 bg-black text-white rounded-full text-sm font-bold flex items-center gap-2 hover:shadow-xl transition-all hover:translate-y-[-1px]"

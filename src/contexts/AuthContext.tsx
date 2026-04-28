@@ -1,66 +1,101 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User } from 'firebase/auth';
-import { auth, db, listenAuth, checkRedirectLogin } from '../lib/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+
+interface User {
+  id: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, displayName: string) => Promise<void>;
+  logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ 
+  user: null, 
+  loading: true,
+  login: async () => {},
+  signup: async () => {},
+  logout: () => {}
+});
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for redirect result on mount
-    const handleRedirect = async () => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const user = await checkRedirectLogin();
-        if (user) {
-          // You could do extra processing here if needed
-          console.log("User detected from redirect in AuthProvider");
+        const res = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        } else {
+          localStorage.removeItem('auth_token');
         }
-      } catch (err) {
-        console.error("Error checking redirect in AuthProvider", err);
+      } catch (e) {
+        console.error('Auth verification failed', e);
+      } finally {
+        setLoading(false);
       }
     };
 
-    handleRedirect();
-
-    const unsubscribe = listenAuth(async (user: User | null) => {
-      if (user) {
-        try {
-          // Sync user document with Firestore if possible
-          const userRef = doc(db, 'users', user.uid);
-          const userDoc = await getDoc(userRef);
-          
-          if (!userDoc.exists()) {
-            await setDoc(userRef, {
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName,
-              photoURL: user.photoURL,
-              createdAt: new Date().toISOString(),
-            });
-          }
-        } catch (error) {
-          console.warn("Firestore user document sync failed:", error);
-        }
-        setUser(user);
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    checkAuth();
   }, []);
 
+  const login = async (email: string, password: string) => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Login failed');
+    }
+
+    const data = await res.json();
+    localStorage.setItem('auth_token', data.token);
+    setUser(data.user);
+  };
+
+  const signup = async (email: string, password: string, displayName: string) => {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, displayName })
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Signup failed');
+    }
+
+    const data = await res.json();
+    localStorage.setItem('auth_token', data.token);
+    setUser(data.user);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('auth_token');
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

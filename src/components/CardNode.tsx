@@ -122,7 +122,7 @@ export default function CardNode({
               className="relative overflow-hidden rounded-md group/img mb-3"
             >
               <img 
-                src={data.image} 
+                src={data.image || undefined} 
                 alt="Card content" 
                 className="w-full h-auto object-cover max-h-40 grayscale-[20%] hover:grayscale-0 transition-all"
               />
