@@ -14,8 +14,11 @@ export function useProjects() {
     try {
       const res = await fetch('/api/projects', { headers: getHeaders() });
       if (res.ok) {
-        const data = await res.json();
-        setProjects(data.sort((a: any, b: any) => b.updatedAt - a.updatedAt));
+        const text = await res.text();
+        if (text) {
+          const data = JSON.parse(text);
+          setProjects(data.sort((a: any, b: any) => b.updatedAt - a.updatedAt));
+        }
       }
     } catch (e) {
       console.error('Failed to fetch projects', e);
@@ -74,7 +77,8 @@ export function useProjects() {
     try {
       const res = await fetch(`/api/projects/${id}`, { headers: getHeaders() });
       if (res.ok) {
-        return await res.json();
+        const text = await res.text();
+        return text ? JSON.parse(text) : null;
       }
       return null;
     } catch (error) {

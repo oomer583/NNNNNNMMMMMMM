@@ -40,8 +40,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
+          const text = await res.text();
+          if (text) {
+            const data = JSON.parse(text);
+            setUser(data.user);
+          }
         } else {
           localStorage.removeItem('auth_token');
         }
@@ -63,8 +66,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message || 'Login failed');
+      let message = 'Login failed';
+      try {
+        const error = await res.json();
+        message = error.message || message;
+      } catch (e) {
+        // Not JSON or empty body
+      }
+      throw new Error(message);
     }
 
     const data = await res.json();
@@ -80,8 +89,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message || 'Signup failed');
+      let message = 'Signup failed';
+      try {
+        const error = await res.json();
+        message = error.message || message;
+      } catch (e) {
+        // Not JSON
+      }
+      throw new Error(message);
     }
 
     const data = await res.json();

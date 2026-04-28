@@ -7,6 +7,8 @@ import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import crypto from 'crypto';
 
+const uuid = () => crypto.randomBytes(16).toString('hex');
+
 const PORT = 3000;
 const JWT_SECRET = 'your-secret-key'; // In production, use env variable
 const USERS_FILE = path.join(process.cwd(), 'users.json');
@@ -37,7 +39,7 @@ async function startServer() {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = {
-      id: crypto.randomUUID(),
+      id: uuid(),
       email,
       password: hashedPassword,
       displayName: displayName || email.split('@')[0],
@@ -131,7 +133,7 @@ async function startServer() {
   app.post('/api/projects', authenticate, (req: any, res) => {
     const { name, category, nodes, edges, background } = req.body;
     const projectsData = getProjectsData();
-    const id = crypto.randomUUID();
+    const id = uuid();
     
     projectsData[id] = {
       name,
@@ -192,6 +194,12 @@ async function startServer() {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
+
+  // Error handler
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error('Server Error:', err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  });
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running at http://0.0.0.0:${PORT}`);
