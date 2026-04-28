@@ -23,6 +23,11 @@ async function startServer() {
   app.use(express.json());
   app.use(cors());
 
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+  });
+
   // Helper to read users
   const getUsers = () => {
     try {
@@ -33,6 +38,10 @@ async function startServer() {
     }
   };
   const saveUsers = (users: any) => fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
+  });
 
   // --- Auth Routes ---
 
@@ -86,6 +95,14 @@ async function startServer() {
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword, token });
+  });
+
+  app.get('/api/auth/login', (req, res) => {
+    res.status(405).json({ message: 'Login requires POST' });
+  });
+
+  app.get('/api/auth/signup', (req, res) => {
+    res.status(405).json({ message: 'Signup requires POST' });
   });
 
   app.get('/api/auth/me', (req, res) => {
@@ -200,6 +217,10 @@ async function startServer() {
   });
 
   // --- Vite Middleware ---
+  app.use('/api', (req, res) => {
+    res.status(404).json({ message: `API route not found: ${req.method} ${req.originalUrl}` });
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
